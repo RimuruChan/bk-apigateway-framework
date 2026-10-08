@@ -17,6 +17,8 @@ from urllib.parse import urlparse
 
 import environ
 import pymysql
+from django.db.backends.mysql.features import DatabaseFeatures
+from django.utils.functional import cached_property
 from apigw_manager.drf.utils import (
     get_default_database_config_dict,
     get_logging_config_dict,
@@ -33,7 +35,19 @@ from apigw_manager.plugin.config import (
 
 pymysql.install_as_MySQLdb()
 # Patch version info to forcedly pass Django client check
-pymysql.version_info = 1, 4, 2, "final", 0
+pymysql.version_info = 1, 4, 3, "final", 0
+
+
+class PatchFeatures:
+    @cached_property
+    def minimum_database_version(self):
+        if self.connection.mysql_is_mariadb:
+            return (10, 4)
+        return (5, 7)
+
+
+# 目前 Django 仅是对 5.7 做了软性的不兼容改动，在没有使用 8.0 特异的功能时，对 5.7 版本的使用无影响
+DatabaseFeatures.minimum_database_version = PatchFeatures.minimum_database_version
 
 
 # environ
@@ -169,8 +183,6 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 
 USE_I18N = True
-
-USE_L10N = True
 
 USE_TZ = True
 
