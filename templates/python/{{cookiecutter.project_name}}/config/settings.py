@@ -380,6 +380,8 @@ stage_mcp_servers = {
             # "tool_names": [],
             # 是否开启 OAuth2 公开客户端模式，开启后将对 bk_app_code=public 的应用授权，默认不开启
             # "oauth2_public_client_enabled": False,
+            # 是否开启 OAuth2 个人客户端模式(个人 token)，开启后将对 bk_app_code=personal 的应用授权，默认不开启
+            # "oauth2_personal_client_enabled": False,
             # 是否返回原始响应，开启后 mcp-proxy 将直接返回 API 响应结果，不添加 request_id 等额外信息，默认不开启
             # "raw_response_enabled": False,
             # MCP Server 分类名称列表，不传则不更新分类
@@ -399,6 +401,7 @@ stage_mcp_servers = {
             "tools": [],
             # "tool_names": [],
             # "oauth2_public_client_enabled": False,
+            # "oauth2_personal_client_enabled": False,
             # "raw_response_enabled": False,
             # "category_names": [],
         },
@@ -414,6 +417,7 @@ stage_mcp_servers = {
             "tools": ["demo2"],
             # "tool_names": ["demo2"],
             # "oauth2_public_client_enabled": False,
+            # "oauth2_personal_client_enabled": False,
             # "raw_response_enabled": False,
             # "category_names": ["Official"],
         }
