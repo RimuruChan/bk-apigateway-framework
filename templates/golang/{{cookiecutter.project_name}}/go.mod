@@ -1,9 +1,9 @@
 // +heroku install github.com/TencentBlueKing/blueapps-go
 module github.com/TencentBlueKing/{{cookiecutter.project_name}}
 
-go 1.24.0
+go 1.25.0
 
-toolchain go1.24.2
+toolchain go1.25.14
 
 // 重要！v1.8.0 版本的 mysql driver 中添加对连接属性的支持，可能会导致老版本的 proxy core dump
 replace github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.7.1
