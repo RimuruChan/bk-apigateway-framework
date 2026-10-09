@@ -31,7 +31,7 @@ func GetApiConfig(cfg *SvcConfig) *model.APIConfig {
 		ResourceDocs: model.ResourceDocConfig{
 			// 在项目 docs目录下，通过 markdown文档自动化导入中英文文档;
 			// 注意markdown文件名必须等于接口的 operation_id; 见 demo 示例
-			BaseDir: envx.Get("BK_APIGW_RELEASE_DOC_LANGUAGE", ""),
+			BaseDir: envx.Get("BK_APIGW_RESOURCE_DOCS_BASE_DIR", ""),
 			// 通过swagger生成资源文档语言:zh/en, 如果配置了BK_APIGW_RESOURCE_DOCS_BASE_DIR（使用自定义文档）
 			// 那么必须将这个变量置空
 			Language: envx.Get("BK_APIGW_RELEASE_DOC_LANGUAGE", ""),

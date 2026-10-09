@@ -8,10 +8,10 @@ import (
 	"github.com/TencentBlueKing/bk-apigateway-sdks/gin_contrib/gen"
 	"github.com/spf13/cobra"
 
-	"github.com/TencentBlueKing/blueapps-go/pkg/config"
 	log "github.com/TencentBlueKing/blueapps-go/pkg/logging"
 	"github.com/TencentBlueKing/blueapps-go/pkg/utils/envx"
 
+	"github.com/TencentBlueKing/{{cookiecutter.project_name}}/pkg/config"
 	"github.com/TencentBlueKing/{{cookiecutter.project_name}}/pkg/router"
 	"github.com/TencentBlueKing/{{cookiecutter.project_name}}/pkg/utils"
 )
@@ -26,13 +26,15 @@ func NewGenResourceYamlCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.Background()
 			// 加载配置
-			_, err := config.Load(ctx, cfgFile)
+			cfg, err := config.Load(ctx, cfgFile)
 			if err != nil {
 				log.Fatalf("failed to load config: %s", err)
 			}
 			engine := router.New(log.GetLogger("gin"))
 			docPath := docsDir + "/swagger.json"
-			yaml := gen.GenResourceYamlFromSwaggerJson(docPath, engine)
+			// 资源的后端路径需要带上应用部署的子路径，如 /stag--default--{app_code}
+			subPath := config.GetStageConfig(cfg).BackendSubPath
+			yaml := gen.GenResourceYamlFromSwaggerJson(docPath, engine, subPath)
 			log.Infof(ctx, "gen resource yaml success:\n %s", yaml)
 			resourcesFilePath := filepath.Join(utils.GetParentDir(docsDir), "resources.yaml")
 			// 生成资源配置yaml文件

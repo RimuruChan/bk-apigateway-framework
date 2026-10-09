@@ -22,7 +22,7 @@ func Register(rg *gin.RouterGroup) {
 	basicConfig := model.ResourceBasicConfig{
 		IsPublic:             true,
 		AllowApplyPermission: true,
-		MatchSubpath:         true,
+		MatchSubpath:         false,
 		EnableWebsocket:      false,
 	}
 
@@ -56,7 +56,6 @@ func Register(rg *gin.RouterGroup) {
 			basicConfig.WithPluginConfig(headerWriterPlugin),
 			basicConfig.WithBackend(model.BackendConfig{
 				Timeout: 10,
-				Path:    "/api/v1/users",
 			}),
 			// 开启mcp
 			basicConfig.WithMcpEnable(true),

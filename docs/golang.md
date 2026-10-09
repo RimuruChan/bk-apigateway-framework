@@ -77,7 +77,7 @@ func GetApiConfig(cfg *SvcConfig) *model.APIConfig {
 		ResourceDocs: model.ResourceDocConfig{
 			// 在项目 docs目录下，通过 markdown文档自动化导入中英文文档;
 			// 注意markdown文件名必须等于接口的 operation_id; 见 demo 示例
-			BaseDir: envx.Get("BK_APIGW_RELEASE_DOC_LANGUAGE", ""),
+			BaseDir: envx.Get("BK_APIGW_RESOURCE_DOCS_BASE_DIR", ""),
 			// 通过swagger生成资源文档语言:zh/en, 如果配置了BK_APIGW_RESOURCE_DOCS_BASE_DIR（使用自定义文档）
 			// 那么必须将这个变量置空
 			Language: envx.Get("BK_APIGW_RELEASE_DOC_LANGUAGE", ""),
@@ -154,7 +154,7 @@ func GetStageConfig(cfg *SvcConfig) *model.StageConfig {
 		PluginConfigs: []*model.PluginConfig{
 			stageHeaderRewritePlugin,
 		},
-		EnableMcpServers: cast.ToBool(envx.Get("BK_APIGW_STAGE_ENABLE_MCP_SERVERS", "true")),
+		EnableMcpServers: cast.ToBool(envx.Get("BK_APIGW_STAGE_ENABLE_MCP_SERVERS", "false")),
 	}
 
 	// 设置 mcp server 配置
@@ -171,9 +171,9 @@ func GetStageConfig(cfg *SvcConfig) *model.StageConfig {
 				// 是否启用：0-未启用，1-启用（必选字段）
 				Status: 1,
 				// mcp server 绑定的资源名称列表
-				ResourceNames: []string{"create_user"},
+				ResourceNames: []string{},
 				// 工具名称列表，默认等于 ResourceNames；如需重命名可设置此字段，长度必须与 ResourceNames 一致且不能重复
-				// ToolNames: []string{"create_user"},
+				// ToolNames: []string{},
 				// 主动授权
 				TargetAppCodes: []string{"app1"},
 				// 是否开启 OAuth2 公开客户端模式，开启后将对 bk_app_code=public 的应用授权，默认不开启
@@ -195,7 +195,8 @@ func GetReleaseConfig(cfg *SvcConfig) model.ReleaseConfig {
 		// 版本号: v1.0.0+prod
 		Version: fmt.Sprintf("%s+%s",
 			envx.Get("BK_APIGW_RELEASE_VERSION", "1.0.0"),
-			envx.Get("BKPAAS_ENVIRONMENT", "prod")),
+			envx.MustGet("BKPAAS_ENVIRONMENT"),
+		),
 		// 版本日志
 		Comment: envx.Get("BK_APIGW_RELEASE_COMMENT", ""),
 	}
@@ -207,13 +208,15 @@ func GetReleaseConfig(cfg *SvcConfig) model.ReleaseConfig {
 
 详情见:[demo](https://github.com/TencentBlueKing/bk-apigateway-framework/blob/master/templates/golang/%7B%7Bcookiecutter.project_name%7D%7D/pkg/apis/user/router.go)
 
+> 注意：接口 swaggo 注释中 `@Router` 的路径和方法，必须与 gin 注册的完整路由（包含 group 前缀，区分大小写）一致，否则网关扩展配置不会生效。修改注释后，需要执行 `make doc` 重新生成 docs 目录。
+
 ```go
-    // 使用网关鉴权中间件
-	categoryRouter.Use(middleware.GatewayJWTAuthMiddleware())
+	// 使用网关鉴权中间件
+	userRouter.Use(middleware.GatewayJWTAuthMiddleware())
 	basicConfig := model.ResourceBasicConfig{
 		IsPublic:             true,
 		AllowApplyPermission: true,
-		MatchSubpath:         true,
+		MatchSubpath:         false,
 		EnableWebsocket:      false,
 	}
 
@@ -225,7 +228,7 @@ func GetReleaseConfig(cfg *SvcConfig) model.ReleaseConfig {
 		})
 
 	util.RegisterBkAPIGatewayRouteWithGroup(
-		categoryRouter, "GET", "",
+		userRouter, "GET", "/list",
 		model.NewAPIGatewayResourceConfig(
 			basicConfig,
 			basicConfig.WithAuthConfig(model.AuthConfig{
@@ -233,12 +236,10 @@ func GetReleaseConfig(cfg *SvcConfig) model.ReleaseConfig {
 				AppVerifiedRequired:  true, // 应用认证
 			}),
 			// 设置资源名称，不设置则自动生成
-            basicConfig.WithOperationID("resource_name"),
-            // 开启mcp
-            basicConfig.WithMcpEnable(true),
+			basicConfig.WithOperationID("resource_name"),
 			// 设置 plugin
 			basicConfig.WithPluginConfig(headerWriterPlugin)),
-		handler.ListCategories,
+		handler.ListUsers,
 	)
 ```
 
@@ -286,6 +287,6 @@ MCP Server 配置字段说明：
 配置完之后，可以本地生成 definition.yaml 和 resources.yaml 进行测试
 
 ```bash
-{{cookiecutter.project_name}} generate_definition_yaml && cat definition.yaml
-{{cookiecutter.project_name}} generate_resources_yaml && cat resources.yaml
+{{cookiecutter.project_name}} gen_definition_yaml && cat definition.yaml
+{{cookiecutter.project_name}} gen_resources_yaml && cat resources.yaml
 ```
